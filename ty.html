@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Recycles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(to bottom, #4caf50, #81c784);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        header {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            animation: fadeInDown 2s;
+        }
+        header nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+        header nav a:hover {
+            color: #ffeb3b;
+        }
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            background: url('https://source.unsplash.com/1600x900/?bicycle,nature') no-repeat center center/cover;
+            color: rgba(0, 0, 0, 0.9);
+            text-shadow: 1px 1px 3px #fff;
+        }
+        .hero h1 {
+            font-size: 4rem;
+            animation: slideInFromLeft 2s;
+        }
+        .hero p {
+            font-size: 1.5rem;
+            animation: slideInFromRight 2s;
+        }
+        .hero button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #ffeb3b, #ffc107);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .hero button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .section {
+            padding: 50px 20px;
+            text-align: center;
+            animation: fadeInUp 2s;
+        }
+        .section:nth-child(odd) {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .section p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        #mapContainer {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        #qr-reader {
+            width: 300px;
+            margin: auto;
+        }
+        #auth input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        #auth button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            text-align: center;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInFromLeft {
+            from { opacity: 0; transform: translateX(-100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInFromRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            animation: fadeInDown 2s;
+        }
+
+        header nav {
+            margin-top: 10px;
+        }
+
+        header nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        header nav a:hover {
+            color: #ffeb3b;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            background: url('https://source.unsplash.com/1600x900/?bicycle,nature') no-repeat center center/cover;
+            color: rgba(0, 0, 0, 0.9);
+            text-shadow: 1px 1px 3px #fff;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            animation: slideInFromLeft 2s;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            animation: slideInFromRight 2s;
+        }
+
+        .hero button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #ffeb3b, #ffc107);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .hero button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .section {
+            padding: 50px 20px;
+            text-align: center;
+            animation: fadeInUp 2s;
+        }
+
+        .section:nth-child(odd) {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .section p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .services {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .service-card {
+            background: #fff;
+            color: #000;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            text-align: center;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        footer .social-icons {
+            margin-top: 10px;
+        }
+
+        footer .social-icons a {
+            margin: 0 10px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        footer .social-icons a:hover {
+            color: #ffeb3b;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cycle Recycles</h1>
+        <nav>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#map">Recycling Locations</a>
+            <a href="#auth">Login/Signup</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <h1>Welcome to Cycle Recycles</h1>
+        <p>Turning old cycles into something new and amazing!</p>
+        <button onclick="scrollToSection('about')">Learn More</button>
+    </div>
+
+    <section class="section" id="about">
+        <h2>About Us</h2>
+        <p>Cycle Recycles is dedicated to promoting sustainability by refurbishing and reusing old bicycles. Join us in our mission to reduce waste and create a greener future!</p>
+    </section>
+
+    <section class="section" id="services">
+        <h2>Your Progress</h2>
+        <p>Points Earned: <span id="points">0</span></p>
+        <p>Current Streak: <span id="streak">0</span> days</p>
+    </section>
+    <section class="section" id="services">
+        <h2>Our Services</h2>
+        <div class="services">
+            <div class="service-card">
+                <h3>Bike Repairs</h3>
+                <p>Get your bike back to its best with our expert repair services.</p>
+            </div>
+            <div class="service-card">
+                <h3>Recycling</h3>
+                <p>We recycle old and damaged bikes to minimize environmental waste.</p>
+            </div>
+            <div class="service-card">
+                <h3>Custom Refurbishments</h3>
+                <p>Create a unique, personalized bike that suits your style.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="map">
+        <h2>Recycling Locations</h2>
+        <div id="mapContainer"></div>
+    </section>
+
+    <section class="section" id="qr-scanner">
+        <h2>Scan QR Code</h2> 
+        <input type="file" id="imageUpload" accept="image/*">
+        <div id="qr-reader"></div>
+    </section>
+
+    <section class="section" id="auth">
+        <h2>Login / Signup</h2>
+        <div id="login-form">
+            <h3>Login</h3>
+            <input type="email" id="login-email" placeholder="Enter Email" required />
+            <input type="password" id="login-password" placeholder="Enter Password" required />
+            <button onclick="login()">Login</button>
+            <p>Don't have an account? <a href="#" onclick="toggleForms()">Sign up here</a></p>
+        </div>
+        <div id="signup-form" style="display: none;">
+            <h3>Signup</h3>
+            <input type="email" id="signup-email" placeholder="Enter Email" required />
+            <input type="password" id="signup-password" placeholder="Enter Password" required />
+            <button onclick="signup()">Signup</button>
+            <p>Already have an account? <a href="#" onclick="toggleForms()">Login here</a></p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Cycle Recycles. All rights reserved.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.2.7/html5-qrcode.min.js"></script>
+    <script>
+        let points = 0;
+        let streak = 0;
+        let lastRecycleDate = null;
+        const users = [];
+
+        function initMap() {
+            const map = L.map('mapContainer').setView([24.4539, 54.3773], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const locations = [
+                { name: "Ecyclex International Recycling", lat: 24.3369, lng: 54.5356, description: "Recycling center for plastic bottles." },
+                { name: "Green Recycling Center", lat: 24.4539, lng: 54.3773, description: "General recycling center accepting various materials." }
+            ];
+
+            locations.forEach(location => {
+                L.marker([location.lat, location.lng])
+                    .addTo(map)
+                    .bindPopup(`<b>${location.name}</b><br>${location.description}`);
+            });
+        }
+        function decodeImage(img) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+            const code = jsQR(imageData.data, img.width, img.height, {
+                inversionAttempts: "dontInvert",
+            });
+
+            if (code) {
+                document.getElementById('qr-result').textContent = "Decoded QR code: " + code.data;
+                console.log("Decoded QR code: ", code.data);
+            } else {
+                document.getElementById('qr-result').textContent = "QR code not found, try again";
+            }
+        }
+         window.onload = function () {
+            initMap();
+        };
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Code scanned: ${decodedText}`);
+            addPoints(50);
+            updateStreak();
+        }
+
+        function addPoints(amount) {
+            points += amount;
+            document.getElementById("points").innerText = points;
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            if (lastRecycleDate !== today) {
+                streak++;
+                lastRecycleDate = today;
+                document.getElementById("streak").innerText = streak;
+            }
+        }
+
+        function toggleForms() {
+            const loginForm = document.getElementById("login-form");
+            const signupForm = document.getElementById("signup-form");
+            loginForm.style.display = loginForm.style.display === "none" ? "block" : "none";
+            signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
+        }
+
+        function signup() {
+            const email = document.getElementById("signup-email").value.trim();
+            const password = document.getElementById("signup-password").value.trim();
+            if (!email || !password) {
+                alert("Please fill in all fields.");
+                return;
+            }
+            if (users.find(user => user.email === email)) {
+                alert("User already exists. Please log in.");
+                return;
+            }
+            users.push({ email, password });
+            alert("Signup successful! You can now log in.");
+            document.getElementById("signup-email").value = "";
+            document.getElementById("signup-password").value = "";
+            toggleForms();
+        }
+
+        function login() {
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+            if (!email || !password) {
+                alert("Please fill in all fields.");
+                return;
+            }
+            const user = users.find(user => user.email === email && user.password === password);
+            if (user) {
+                alert(`Welcome back, ${email}!`);
+                document.getElementById("login-email").value = "";
+                document.getElementById("login-password").value = "";
+            } else {
+                alert("Invalid credentials. Please try again or sign up.");
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.onload = function() {
+            initMap();
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+        };
+
+        // Image upload and QR decoding
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                alert("No file selected!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    decodeImage(img);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        
+    </script>
+</body>
+</html>
